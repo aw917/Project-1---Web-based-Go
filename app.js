@@ -123,27 +123,51 @@ const game = new GameState();
 // Move Locations
 // ====================
 
-//Empty array to hold all the moves
-let moveHolder = [];
-
 // Board DOM nodes
 let boardSquareHolder = [];
 
 // Create DIV's for board squares
 for (let i = 0; i < (game.boardSize * game.boardSize); i++) {
     let boardSquares = document.createElement('div');
-    boardSquares.setAttribute('class', 'board-squares');
-    boardSquares.setAttribute('id', `${i + 1}-${i + 1}`); // used to track board location
-    boardSquareHolder.push(boardSquares);
-    boardDomNode.appendChild(boardSquares);
+    // make board pieces
+    boardSquares.setAttribute('class', 'board-squares'); // formatting for dom events
+    boardSquares.setAttribute('id', `${i}`); // used to track board location
+    boardSquareHolder.push(boardSquares); // array for event listeners
+    boardDomNode.appendChild(boardSquares); // put divs onto the board itself
 }
+
+//Empty array to hold all the moves
+let moveHolder = [];
+
+// Move object template
+let moveTemplateObject = {
+    x: 1, // x axis of the grid, running form 1 to board.length
+    y: 1, // y axis of the grid, running form 1 to board.length
+    played: true || false
+}
+
+// Generate move object
+const generateMove = (evt) => {
+    let thisMove = {
+        x: 1,
+        y: 1,
+        played: true
+    }
+    thisMove.x = Math.floor((Number(evt.target.id) / game.boardSize)) + 1;  // (x, y) = ( rounded down # of times divisible by 9 + 1, remainder + 1)
+    thisMove.y = Math.floor((Number(evt.target.id) % game.boardSize)) + 1;
+    moveHolder.push(thisMove);
+    console.log(moveHolder);
+    console.log(thisMove);
+}
+
+// Loop over boardSquareHolder div's for div's where id is divisible by 9, set those equal to x = n and y = 1
 
 // ====================
 // Stone Capture
 // ====================
 
 // ====================
-// Winning Points
+// Counting Points
 // ====================
 
 // ====================
@@ -165,28 +189,26 @@ const enableOtherListeners = () => {
 resignButton.addEventListener('click', game.resign);
 passButton.addEventListener('click', game.pass);
 
-// Functions for squares
-const stoneHighlight = (evt) => {
-    console.log(evt.target);
-}
-
 // Square titles
 for (let i = 0; i < boardSquareHolder.length; i++) {
     boardSquareHolder[i].addEventListener('click', (evt) => {
     // Control for spots already played in
     if (evt.target.className.includes('played')) {
-        console.log('already played');
+        // console.log('already played');
     // Logic for white or black
     } else {
         if (getCurrentTurn() === "White") {
             evt.target.setAttribute('class', 'played-white');
-            evt.target.opacity = 1;
+            boardSquareHolder[i].style.opacity = 1;
         } else {
             evt.target.setAttribute('class', 'played-black');
+            boardSquareHolder[i].style.opacity = 1;
         }
         // Increment and then play sound effect is move is available
         turnTracker ++;
         stoneSoundEffect.play();
+        generateMove(evt);
+        game.lastMove = moveHolder[turnTracker - 2]; // Turn tracker is incrmented prior to updating this record
     }
     })
 }
@@ -197,7 +219,7 @@ for (let i = 0; i < boardSquareHolder.length; i++) {
         // Show hover if the area has not been played
         if (evt.target.className.includes("played")) {
             // Control for whose turn it is
-            console.log('already played');
+            // console.log('already played');
         } else {
             if (getCurrentTurn() === "White") {
                 evt.target.className = "white-stone";
@@ -210,11 +232,12 @@ for (let i = 0; i < boardSquareHolder.length; i++) {
     })
 
 }
+
 // Removes hover formatting on exit
 for (let i = 0; i < boardSquareHolder.length; i++) {
     boardSquareHolder[i].addEventListener('pointerout', (evt) => {
     if (evt.target.className.includes("played")) {
-        console.log('already played') 
+        // console.log('already played') 
     } else {
         evt.target.style.opacity = 0;
     }
