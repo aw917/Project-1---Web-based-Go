@@ -8,5 +8,33 @@
 </head>
 <body>
     <script src="app.js" defer></script>
+    <h1>Go</h1>
+    <div class="white-stone" id="white-stone-test"></div>
+    <div class="black-stone" id="black-stone-test"></div>
+    <div class="board-div">
+        <img src="assets/images/9x9_board_standard.jpeg" alt="9x9 go board" class="board-image"></img:src>
+    </div>
+
+    <p class="stats" id="black-captured">
+        Black has captured: <span id="black-captured-count"></span>
+        <br>
+        <br>
+        White has captured: <span id="white-captured-count"></span>
+    </p>
+
+    <div class="action-buttons">
+        <button id="resign-button">resign</button>
+        <button id="pass-button">pass</button>
+    </div>
+
+    <div class="modal">
+        <h2>Welcome to Go!</h2>
+        <p>Please read through the <a href="https://en.wikipedia.org/wiki/Rules_of_Go">instructions</a> for how to play.</p>
+        <p>Black plays first and the komi (the number of points that white starts with) is set to 3.5.</p>
+        <button id="play-button">play</button>
+    </div>
+
+    
+
 </body>
 </html>
