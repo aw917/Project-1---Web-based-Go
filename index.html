@@ -8,6 +8,8 @@
 </head>
 <body>
     <script src="app.js" defer></script>
+
+<!-- Board -->
     <h1>Go</h1>
     <div class="white-stone" id="white-stone-test"></div>
     <div class="black-stone" id="black-stone-test"></div>
@@ -15,6 +17,7 @@
         <img src="assets/images/9x9_board_standard.jpeg" alt="9x9 go board" class="board-image"></img:src>
     </div>
 
+<!-- Status side-bars -->
     <p class="stats" id="black-captured">
         Black has captured: <span id="black-captured-count"></span>
         <br>
@@ -22,11 +25,13 @@
         White has captured: <span id="white-captured-count"></span>
     </p>
 
+<!-- Functional buttons -->
     <div class="action-buttons">
         <button id="resign-button">resign</button>
         <button id="pass-button">pass</button>
     </div>
 
+<!-- Modal pop-up -->
     <div class="modal">
         <h2>Welcome to Go!</h2>
         <p>Please read through the <a href="https://en.wikipedia.org/wiki/Rules_of_Go">instructions</a> for how to play.</p>
@@ -34,7 +39,7 @@
         <button id="play-button">play</button>
     </div>
 
-    
-
+<!-- Sound effects -->
+        <audio src="assets/sound/stone_on_board.wav" type="audio/wav" id="board-sound-effect">
 </body>
 </html>

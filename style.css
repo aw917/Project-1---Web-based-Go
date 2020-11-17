@@ -149,8 +149,6 @@ Action Buttons
 Stones
 */
 .black-stone {
-    position: absolute;
-    /* top: 650px; */
     height: 48px;
     width: 48px;
     border-radius: 50%;
@@ -158,8 +156,6 @@ Stones
     box-shadow: inset -3px -3px rgba(255, 255, 255, .35);
 }
 .white-stone {
-    /* position: absolute; */
-    /* top: 725px; */
     height: 48px;
     width: 48px;
     border-radius: 50%;
@@ -167,6 +163,23 @@ Stones
     box-shadow: inset -3px -3px rgba(0, 0, 0, .35);
     z-index: 5;
 }
+.played-black {
+    height: 48px;
+    width: 48px;
+    border-radius: 50%;
+    background-color: black;
+    box-shadow: inset -3px -3px rgba(255, 255, 255, .35);
+    z-index: 7;
+}
+.played-white {
+    height: 48px;
+    width: 48px;
+    border-radius: 50%;
+    background-color: white;
+    box-shadow: inset -3px -3px rgba(0, 0, 0, .35);
+    z-index: 7;
+}
+
 /* Remove stones from display */
 #black-stone-test {
     display: none;
