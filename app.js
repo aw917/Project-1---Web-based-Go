@@ -153,18 +153,67 @@ const generateMove = (evt) => {
         y: 1,
         played: true
     }
+    // Convert div id's to x, y locations
     thisMove.x = Math.floor((Number(evt.target.id) / game.boardSize)) + 1;  // (x, y) = ( rounded down # of times divisible by 9 + 1, remainder + 1)
     thisMove.y = Math.floor((Number(evt.target.id) % game.boardSize)) + 1;
+    // Track moves by pushing them into an array 
     moveHolder.push(thisMove);
     console.log(moveHolder);
     console.log(thisMove);
+    checkForBlanks(thisMove, thisMove);
+    // checkForCapture(thisMove, thisMove); // to be created
 }
-
-// Loop over boardSquareHolder div's for div's where id is divisible by 9, set those equal to x = n and y = 1
 
 // ====================
 // Stone Capture
 // ====================
+
+const checkForBlanks = (moveX, moveY) => {
+    // Check for boundaries of the board
+    if ((moveX.x - 1) >= 1 && (moveX.x + 1) <= game.boardSize && (moveY.y - 1) >= 1 && (moveY.y + 1) <= game.boardSize) {
+    } else {
+        console.log('on edge');
+        return ('on edge')
+    }
+    // Collect boolean results for testing for blanks
+    let testBlankArrayTemporary = [];
+    // Check if move contains one to the left
+    let aboveTest = moveHolder.find(moveHolder => moveHolder.x === (moveX.x - 1) && moveHolder.y === moveY.y);
+    let belowTest = moveHolder.find(moveHolder => moveHolder.x === (moveX.x + 1) && moveHolder.y === moveY.y);
+    let leftTest = moveHolder.find(moveHolder => moveHolder.y === (moveY.y - 1) && moveHolder.x === moveX.x);
+    let rightTest = moveHolder.find(moveHolder => moveHolder.y === (moveY.y + 1) && moveHolder.x === moveX.x);
+    if (aboveTest) {
+        console.log('detected one above')
+    }
+    if (belowTest) {
+        console.log('detected one below')
+    }
+    if (leftTest) {
+        console.log('detected one left')
+    }
+    if (rightTest) {
+        console.log('detected one right')
+    }
+    // reset as blanks
+    testBlankArrayTemporary = [];
+}
+
+// Create function that checks if current move is touch a stone of the opposite color
+// If true, put those stones into a temporary array
+// Create temporary array for logic check of stone capture
+// Loop through array and check logic:
+// within 1 - 9 for x and y go to each of the following
+// x - 1, x + 1, y - 1, y + 1
+// if any are blank, end function or push "blank" to array
+// if same color, continue function from that stone
+//   and push checked stones into an array that tracks them
+//   (how to prevent double checked? temporary ids?)
+// if different color, push string "captured" to array
+
+// Check array for all captured, take tracked stones and count
+// get ids from array (conversion function?)
+// change class name from stone
+// add points by counting and put them back in
 
 // ====================
 // Counting Points
