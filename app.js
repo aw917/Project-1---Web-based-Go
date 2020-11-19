@@ -64,6 +64,10 @@ const boardDomNode = document.querySelector('.board-div');
 const whiteStone = document.querySelector('.white-stone');
 const blackStone = document.querySelector('.black-stone');
 
+// captured counts
+const whiteCapturedCount = document.querySelector('#black-captured-count');
+const blackCapturedCount = document.querySelector('#white-captured-count');
+
 // sound effect
 const stoneSoundEffect = document.querySelector('#board-sound-effect');
 
@@ -84,8 +88,8 @@ const getCurrentTurn = () => {
 class GameState {
     constructor() {
         this.lastMove;
-        this.capturedWhiteStones;
-        this.capturedBlackStones;
+        this.capturedWhiteStones = 0;
+        this.capturedBlackStones = 0;
         this.whitePoints;
         this.blackPoints;
 
@@ -641,8 +645,10 @@ const performCapture = (obj) => {
     // add captured points to total captured points to the correct color
     if (obj.color === 'White') {
         game.capturedWhiteStones = game.capturedWhiteStones + obj.length;
+        whiteCapturedCount.innerText = `${game.capturedWhiteStones}`
     } else {
         game.capturedBlackStones = game.capturedBlackStones + obj.length;
+        blackCapturedCount.innerText = `${game.capturedBlackStones}`
     }
 
     // put all divs' id's into an array
@@ -654,7 +660,7 @@ const performCapture = (obj) => {
         idHolder.push(tempId);
     })
     
-    // turn transparency and change class name for each of the divs
+    // turn transparency to 0 and change class name for each of the divs
     for (i = 0; i < idHolder.length; i++) {
         let stoneCapturedDiv = document.getElementById(`${idHolder[i]}`);
         stoneCapturedDiv.style.opacity = 0;
