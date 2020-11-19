@@ -170,9 +170,8 @@ const generateMove = (evt) => {
 // Stone Capture
 // ====================
 
-// Used below
-let capturedFinalTestArray = [];
 
+let capturedFinalTestArray = [];
 // Edge checking logic
 
 // Check blanks
@@ -239,7 +238,7 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
             }
         }
         // 1, 9
-        if (moveX.x === 1 && moveY.y === 9) {
+        if (moveX.x === 1 && moveY.y === game.boardSize) {
             if (belowTest) {
                 testBlankArrayTemporary.push(belowTest);
                 capturedTestArray.push('captured');
@@ -254,7 +253,7 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
             }
         }
         // 9, 1
-        if (moveX.x === 9 && moveY.y === 1) {
+        if (moveX.x === game.boardSize && moveY.y === 1) {
             if (aboveTest) {
                 testBlankArrayTemporary.push(aboveTest);
                 capturedTestArray.push('captured');
@@ -269,7 +268,7 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
             }
         }
         // 9, 9
-        if (moveX.x === 9 && moveY.y === 9) {
+        if (moveX.x === game.boardSize && moveY.y === game.boardSize) {
             if (aboveTest) {
                 testBlankArrayTemporary.push(aboveTest);
                 capturedTestArray.push('captured');
@@ -371,15 +370,14 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
     // console.log('on edge');
     // return ('on edge');
     }
-    // console.log(capturedTestArray);
+
     // if there are any intersections, check for colors
     if (testBlankArrayTemporary.length > 0) {
-        // captureFunction(moveX, moveY, moveColor);
+
         // Get stones that are touching, and are the opposite color
         let oppositeColorStones = [];
-        // Put all opposite colored stones into an array
-        // console.log(testBlankArrayTemporary);
 
+        // Put all opposite colored stones into an array
         for (let i = 0; i < testBlankArrayTemporary.length; i++) {
 
             // if this move is a neighbor of the other, check the color
@@ -389,18 +387,38 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
                 }
             }
         }
-        // console.log(oppositeColorStones.lengt);
+
+        // if time permits, put in a temporary array that can be used to check if they clicked the same stone
         
+        
+        // console.log(oppositeColorStones.lengt);
         for (let i = 0; i < oppositeColorStones.length; i++) {
-            captureFunction(oppositeColorStones[i]);
+            surroundFunction1(oppositeColorStones[i]);
+
+            let checkDuplicateArray = capturedFinalTestArray;
+
+            function existsPrevious(element) {
+                return (element.x === checkDuplicateArray.x && element.y === checkDuplicateArray.y);
+            }
+
+            if (capturedFinalTestArray.find(existsPrevious)) {
+                break;
+            }
+            // run true multiple times
+            console.log(capturedFinalTestArray);
+
+            // check if captured
+            checkIfSurroundIsCapture(capturedFinalTestArray);
+
+            // reset to null array
+            capturedFinalTestArray = [];
         }
-        console.log(capturedFinalTestArray);
+        
         // After all stones are checked, stop the loop
-        capturedFinalTestArray = [];
+        
     } else {
         console.log('Not touching any stone');
     }
-    console.log(capturedTestArray);
     if (capturedTestArray.includes('blank')) {
         return 'blank';
     }
@@ -409,9 +427,12 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
     testBlankArrayTemporary = [];
 }
 
+// surroundFunction(s) 1 and 2 are recursive functions whereby, they ingest an opposite colored stone touching what is played, and then
+// puts all touching, opposite-colored stones into an array.  They continuously feed off of one another until they complete.
+// They are bounded by above/below/left/right test logic.
 
 // Function for checking if captured
-const captureFunction = (obj) => {
+const surroundFunction1 = (obj) => {
 
     let aboveTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x - 1) && moveHolder.y === obj.y);
     let belowTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x + 1) && moveHolder.y === obj.y);
@@ -435,22 +456,22 @@ const captureFunction = (obj) => {
         }
         if (aboveTest) {
             if ((aboveTest.color === obj.color)) {
-                checkSurround(aboveTest);
+                surroundFunction2(aboveTest);
             }
         }
         if (belowTest) {
             if ((belowTest.color === obj.color)) {
-                checkSurround(belowTest);
+                surroundFunction2(belowTest);
             }
         }
         if (leftTest) {
             if ((leftTest.color === obj.color)) {
-                checkSurround(leftTest);
+                surroundFunction2(leftTest);
             }
         }
         if (rightTest) {
             if ((rightTest.color === obj.color)) {
-                checkSurround(rightTest);
+                surroundFunction2(rightTest);
             }
         }
     }
@@ -458,7 +479,7 @@ const captureFunction = (obj) => {
 
 
 // ==================================================================================================
-const checkSurround = (obj) => {
+const surroundFunction2 = (obj) => {
 
     let aboveTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x - 1) && moveHolder.y === obj.y);
     let belowTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x + 1) && moveHolder.y === obj.y);
@@ -479,27 +500,46 @@ const checkSurround = (obj) => {
         capturedFinalTestArray.push(obj);
         if (aboveTest) {
             if (aboveTest.color === obj.color) {
-                captureFunction(aboveTest);
+                surroundFunction1(aboveTest);
             }
         }
         if (belowTest) {
             if (belowTest.color == obj.color) {
-                captureFunction(belowTest);
+                surroundFunction1(belowTest);
             }
         }
         if (leftTest) {
             if (leftTest.color === obj.color) {
-                captureFunction(leftTest);
+                surroundFunction1(leftTest);
             }
         }
         if (rightTest) {
             if (rightTest.color === obj.color) {
-                captureFunction(rightTest);
+                surroundFunction1(rightTest);
             }
         }
     }
 }
 
+const checkIfSurroundIsCapture = (obj) => {
+
+    for (i = 0; i < obj.length; i++) {
+        let element = obj[i];
+
+        let aboveTest = moveHolder.find(moveHolder => moveHolder.x === (element.x - 1) && moveHolder.y === element.y);
+        let belowTest = moveHolder.find(moveHolder => moveHolder.x === (element.x + 1) && moveHolder.y === element.y);
+        let leftTest = moveHolder.find(moveHolder => moveHolder.y === (element.y - 1) && moveHolder.x === element.x);
+        let rightTest = moveHolder.find(moveHolder => moveHolder.y === (element.y + 1) && moveHolder.x === element.x);
+        
+        // stop if there is a blank
+        if (aboveTest && belowTest && leftTest && rightTest) {
+            console.log('stone is captured');
+        } else {
+            console.log('blank found, so stone is not captured');
+            break;
+        }
+    }
+}
 
 // Create function that checks if current move is touch a stone of the opposite color
 // If true, put those stones into a temporary array
