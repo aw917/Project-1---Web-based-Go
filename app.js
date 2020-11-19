@@ -226,60 +226,36 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
         if (moveX.x === 1 && moveY.y === 1) {
             if (belowTest) {
                 testBlankArrayTemporary.push(belowTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (rightTest) {
                 testBlankArrayTemporary.push(rightTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
-            }
+            } 
         }
         // 1, 9
         if (moveX.x === 1 && moveY.y === game.boardSize) {
             if (belowTest) {
                 testBlankArrayTemporary.push(belowTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (leftTest) {
                 testBlankArrayTemporary.push(leftTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
-            }
+            } 
         }
         // 9, 1
         if (moveX.x === game.boardSize && moveY.y === 1) {
             if (aboveTest) {
                 testBlankArrayTemporary.push(aboveTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (rightTest) {
                 testBlankArrayTemporary.push(rightTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
         }
         // 9, 9
         if (moveX.x === game.boardSize && moveY.y === game.boardSize) {
             if (aboveTest) {
                 testBlankArrayTemporary.push(aboveTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (leftTest) {
                 testBlankArrayTemporary.push(leftTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
         }
     // check 4 edges
@@ -287,84 +263,48 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
         if (moveX.x === 1) {
             if (belowTest) {
                 testBlankArrayTemporary.push(belowTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (leftTest) {
                 testBlankArrayTemporary.push(leftTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (rightTest) {
                 testBlankArrayTemporary.push(rightTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
         }
             // x = 9
         if (moveX.x === game.boardSize) {
             if (aboveTest) {
                 testBlankArrayTemporary.push(aboveTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (leftTest) {
                 testBlankArrayTemporary.push(leftTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (rightTest) {
                 testBlankArrayTemporary.push(rightTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
         }
         // y = 1
         if (moveY.y === 1) {
             if (aboveTest) {
                 testBlankArrayTemporary.push(aboveTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (belowTest) {
                 testBlankArrayTemporary.push(belowTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (rightTest) {
                 testBlankArrayTemporary.push(rightTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
         }
         // y = 9
         if (moveY.y === game.boardSize) {
             if (aboveTest) {
                 testBlankArrayTemporary.push(aboveTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (belowTest) {
                 testBlankArrayTemporary.push(belowTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
             if (leftTest) {
                 testBlankArrayTemporary.push(leftTest);
-                capturedTestArray.push('captured');
-            } else {
-                capturedTestArray.push('blank');
             }
         }
     // console.log('on edge');
@@ -387,28 +327,31 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
                 }
             }
         }
-
-        // if time permits, put in a temporary array that can be used to check if they clicked the same stone
         
-        
-        // console.log(oppositeColorStones.lengt);
+        // Take every opposite color stone and generates an array with their clusters
         for (let i = 0; i < oppositeColorStones.length; i++) {
+            // Run recursive function
             surroundFunction1(oppositeColorStones[i]);
 
+            // Prevent creating double arrays if a stone touches two of opposite colors
             let checkDuplicateArray = capturedFinalTestArray;
-
             function existsPrevious(element) {
                 return (element.x === checkDuplicateArray.x && element.y === checkDuplicateArray.y);
             }
-
+            // If that array exists already, stop the loop
             if (capturedFinalTestArray.find(existsPrevious)) {
                 break;
             }
             // run true multiple times
             console.log(capturedFinalTestArray);
 
-            // check if captured
-            checkIfSurroundIsCapture(capturedFinalTestArray);
+            // check if cluster captured
+            if (checkIfSurroundIsCapture(capturedFinalTestArray) === 'captured') {
+                performCapture(capturedFinalTestArray);
+            } else {
+                // check if an illegal move
+                console.log('no action needed as not captured');
+            }
 
             // reset to null array
             capturedFinalTestArray = [];
@@ -419,14 +362,13 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
     } else {
         console.log('Not touching any stone');
     }
-    if (capturedTestArray.includes('blank')) {
-        return 'blank';
-    }
     // reset as blanks
     capturedTestArray = [];
     testBlankArrayTemporary = [];
 }
 
+
+// ==================================================================================================
 // surroundFunction(s) 1 and 2 are recursive functions whereby, they ingest an opposite colored stone touching what is played, and then
 // puts all touching, opposite-colored stones into an array.  They continuously feed off of one another until they complete.
 // They are bounded by above/below/left/right test logic.
@@ -477,23 +419,15 @@ const surroundFunction1 = (obj) => {
     }
 }
 
-
-// ==================================================================================================
+// Recursive pair to surroundfunction1
 const surroundFunction2 = (obj) => {
-
     let aboveTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x - 1) && moveHolder.y === obj.y);
     let belowTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x + 1) && moveHolder.y === obj.y);
     let leftTest = moveHolder.find(moveHolder => moveHolder.y === (obj.y - 1) && moveHolder.x === obj.x);
     let rightTest = moveHolder.find(moveHolder => moveHolder.y === (obj.y + 1) && moveHolder.x === obj.x);
-
     function existsPrevious(element) {
         return (element.x === obj.x && element.y === obj.y);
     }
-
-    // let capturedFinalTestArrayTest = capturedFinalTestArray.find(capturedFinalTestArray => capturedFinalTestArray.x === obj.x && capturedFinalTestArray.y === obj.y);
-
-    // console.log(capturedFinalTestArray.find(existsPrevious));
-
     if (capturedFinalTestArray.find(existsPrevious)) {
         stop();
     } else {
@@ -521,24 +455,220 @@ const surroundFunction2 = (obj) => {
     }
 }
 
+// ==================================================================================================
+// This function mirrors the above in that it checks all off its surroundings for any stone that exists.  Because
+// the color check is performed above, where it flips colors and then clusters all of them, it runs through
+// a check where if everything exists, then it is captured
 const checkIfSurroundIsCapture = (obj) => {
+    let capturedTestArray = [];
 
+    // Check every stone within a group
     for (i = 0; i < obj.length; i++) {
+        // rename each array element for sake of ease
         let element = obj[i];
-
         let aboveTest = moveHolder.find(moveHolder => moveHolder.x === (element.x - 1) && moveHolder.y === element.y);
         let belowTest = moveHolder.find(moveHolder => moveHolder.x === (element.x + 1) && moveHolder.y === element.y);
         let leftTest = moveHolder.find(moveHolder => moveHolder.y === (element.y - 1) && moveHolder.x === element.x);
         let rightTest = moveHolder.find(moveHolder => moveHolder.y === (element.y + 1) && moveHolder.x === element.x);
-        
-        // stop if there is a blank
-        if (aboveTest && belowTest && leftTest && rightTest) {
-            console.log('stone is captured');
+
+        if ((element.x - 1) >= 1 && (element.x + 1) <= game.boardSize && (element.y - 1) >= 1 && (element.y + 1) <= game.boardSize) {
+            // Check if any stone left or right exists, if it does, put it into the array to be tested for later
+            if (aboveTest) {
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (belowTest) {
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (leftTest) {
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (rightTest) {
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            // check if it's the corner or the edge
+        } else if ( (element.x === 1 || element.x === game.boardSize) && (element.y === 1 || element.y === game.boardSize)) {
+    // This section runs through every corner and edge scenario and then runs the stone touching checking algorithm only for that
+    // relevant edge or corner - i.e., if x = 1 and y = 4, you wouldn't check above.  If x = 9 and y = 9, the program
+    // will only check left and above.
+            // check if it's a corner or an edge
+            // check all of the 4 corners
+            // 1, 1
+            if (element.x === 1 && element.y === 1) {
+                if (belowTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (rightTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+            }
+            // 1, 9
+            if (element.x === 1 && element.y === game.boardSize) {
+                if (belowTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (leftTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+            }
+            // 9, 1
+            if (element.x === game.boardSize && element.y === 1) {
+                if (aboveTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (rightTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+            }
+            // 9, 9
+            if (element.x === game.boardSize && element.y === game.boardSize) {
+                if (aboveTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (leftTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+            }
         } else {
-            console.log('blank found, so stone is not captured');
-            break;
+        // check 4 edges
+        // // x = 1
+            if (element.x === 1) {
+                if (belowTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (leftTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (rightTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+            }
+                // x = 9
+            if (element.x === game.boardSize) {
+                if (aboveTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (leftTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (rightTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+            }
+            // y = 1
+            if (element.y === 1) {
+                if (aboveTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (belowTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (rightTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+            }
+            // y = 9
+            if (element.y === game.boardSize) {
+                if (aboveTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (belowTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+                if (leftTest) {
+                    capturedTestArray.push('captured');
+                } else {
+                    capturedTestArray.push('blank');
+                }
+            }
         }
     }
+    if (capturedTestArray.includes('blank')) {
+        return 'not captured';
+    } else {
+        return 'captured';
+    }
+    // reset testing array to null
+    capturedTestArray = [];
+}
+
+const performCapture = (obj) => {
+    // add captured points to total captured points to the correct color
+    if (obj.color === 'White') {
+        game.capturedWhiteStones = game.capturedWhiteStones + obj.length;
+    } else {
+        game.capturedBlackStones = game.capturedBlackStones + obj.length;
+    }
+
+    // put all divs' id's into an array
+    let idHolder = [];
+    obj.map((element) => {
+        let tempId;
+        // reverse div 0 - 80, to (1, 1) to (9, 9)
+        tempId = (element.x - 1) * 9 + element.y - 1;
+        idHolder.push(tempId);
+    })
+    
+    // turn transparency and change class name for each of the divs
+    for (i = 0; i < idHolder.length; i++) {
+        let stoneCapturedDiv = document.getElementById(`${idHolder[i]}`);
+        stoneCapturedDiv.style.opacity = 0;
+        stoneCapturedDiv.setAttribute('class', 'board-squares');
+    }
+
+    // Remove the captured moves from the moveHolder
+    moveHolder.splice(moveHolder.findIndex((item) => {
+        return (item.x !== obj.x && item.y !== obj.y)
+        }), 1);
+    console.log(moveHolder);
+
+    // reset idHolder
+    idHolder = [];
 }
 
 // Create function that checks if current move is touch a stone of the opposite color
@@ -629,7 +759,7 @@ for (let i = 0; i < boardSquareHolder.length; i++) {
 for (let i = 0; i < boardSquareHolder.length; i++) {
     boardSquareHolder[i].addEventListener('pointerout', (evt) => {
     if (evt.target.className.includes("played")) {
-        // console.log('already played') 
+        // nothing, already happened
     } else {
         evt.target.style.opacity = 0;
     }
