@@ -143,7 +143,8 @@ let moveHolder = [];
 let moveTemplateObject = {
     x: 1, // x axis of the grid, running form 1 to board.length
     y: 1, // y axis of the grid, running form 1 to board.length
-    played: true || false
+    played: true || false,
+    color: "White" || "Black"
 }
 
 // Generate move object
@@ -151,16 +152,17 @@ const generateMove = (evt) => {
     let thisMove = {
         x: 1,
         y: 1,
-        played: true
+        played: true,
+        color: getCurrentTurn()
     }
     // Convert div id's to x, y locations
     thisMove.x = Math.floor((Number(evt.target.id) / game.boardSize)) + 1;  // (x, y) = ( rounded down # of times divisible by 9 + 1, remainder + 1)
     thisMove.y = Math.floor((Number(evt.target.id) % game.boardSize)) + 1;
     // Track moves by pushing them into an array 
     moveHolder.push(thisMove);
-    console.log(moveHolder);
-    console.log(thisMove);
-    checkForBlanks(thisMove, thisMove);
+    // console.log(moveHolder);
+    // console.log(thisMove);
+    checkForBlanks(thisMove, thisMove, thisMove);
     // checkForCapture(thisMove, thisMove); // to be created
 }
 
@@ -168,35 +170,336 @@ const generateMove = (evt) => {
 // Stone Capture
 // ====================
 
-const checkForBlanks = (moveX, moveY) => {
-    // Check for boundaries of the board
-    if ((moveX.x - 1) >= 1 && (moveX.x + 1) <= game.boardSize && (moveY.y - 1) >= 1 && (moveY.y + 1) <= game.boardSize) {
-    } else {
-        console.log('on edge');
-        return ('on edge')
-    }
-    // Collect boolean results for testing for blanks
+// Used below
+let capturedFinalTestArray = [];
+
+// Edge checking logic
+
+// Check blanks
+const checkForBlanks = (moveX, moveY, moveColor) => {
+    
+    // Collect temporary results for testing for blanks
     let testBlankArrayTemporary = [];
-    // Check if move contains one to the left
+    testBlankArrayTemporary = [];
+
+    // Check if move touchs one above, below, left, or right
     let aboveTest = moveHolder.find(moveHolder => moveHolder.x === (moveX.x - 1) && moveHolder.y === moveY.y);
     let belowTest = moveHolder.find(moveHolder => moveHolder.x === (moveX.x + 1) && moveHolder.y === moveY.y);
     let leftTest = moveHolder.find(moveHolder => moveHolder.y === (moveY.y - 1) && moveHolder.x === moveX.x);
     let rightTest = moveHolder.find(moveHolder => moveHolder.y === (moveY.y + 1) && moveHolder.x === moveX.x);
-    if (aboveTest) {
-        console.log('detected one above')
+
+    let capturedTestArray = [];
+    capturedTestArray = [];
+    // Check for boundaries of the board
+    if ((moveX.x - 1) >= 1 && (moveX.x + 1) <= game.boardSize && (moveY.y - 1) >= 1 && (moveY.y + 1) <= game.boardSize) {
+        // Check if any stone left or right exists, if it does, put it into the array to be tested for later
+        if (aboveTest) {
+            testBlankArrayTemporary.push(aboveTest);
+            capturedTestArray.push('captured');
+        } else {
+            capturedTestArray.push('blank');
+        }
+        if (belowTest) {
+            testBlankArrayTemporary.push(belowTest);
+            capturedTestArray.push('captured');
+        } else {
+            capturedTestArray.push('blank');
+        }
+        if (leftTest) {
+            testBlankArrayTemporary.push(leftTest);
+            capturedTestArray.push('captured');
+        } else {
+            capturedTestArray.push('blank');
+        }
+        if (rightTest) {
+            testBlankArrayTemporary.push(rightTest);
+            capturedTestArray.push('captured');
+        } else {
+            capturedTestArray.push('blank');
+        }
+    } else {
+// This section runs through every corner and edge scenario and then runs the stone touching checking algorithm only for that
+// relevant edge or corner - i.e., if x = 1 and y = 4, you wouldn't check above.  If x = 9 and y = 9, the program
+// will only check left and above.
+        // check if it's a corner or an edge
+        // check all of the 4 corners
+        // 1, 1
+        if (moveX.x === 1 && moveY.y === 1) {
+            if (belowTest) {
+                testBlankArrayTemporary.push(belowTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (rightTest) {
+                testBlankArrayTemporary.push(rightTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+        }
+        // 1, 9
+        if (moveX.x === 1 && moveY.y === 9) {
+            if (belowTest) {
+                testBlankArrayTemporary.push(belowTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (leftTest) {
+                testBlankArrayTemporary.push(leftTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+        }
+        // 9, 1
+        if (moveX.x === 9 && moveY.y === 1) {
+            if (aboveTest) {
+                testBlankArrayTemporary.push(aboveTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (rightTest) {
+                testBlankArrayTemporary.push(rightTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+        }
+        // 9, 9
+        if (moveX.x === 9 && moveY.y === 9) {
+            if (aboveTest) {
+                testBlankArrayTemporary.push(aboveTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (leftTest) {
+                testBlankArrayTemporary.push(leftTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+        }
+    // check 4 edges
+    // // x = 1
+        if (moveX.x === 1) {
+            if (belowTest) {
+                testBlankArrayTemporary.push(belowTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (leftTest) {
+                testBlankArrayTemporary.push(leftTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (rightTest) {
+                testBlankArrayTemporary.push(rightTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+        }
+            // x = 9
+        if (moveX.x === game.boardSize) {
+            if (aboveTest) {
+                testBlankArrayTemporary.push(aboveTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (leftTest) {
+                testBlankArrayTemporary.push(leftTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (rightTest) {
+                testBlankArrayTemporary.push(rightTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+        }
+        // y = 1
+        if (moveY.y === 1) {
+            if (aboveTest) {
+                testBlankArrayTemporary.push(aboveTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (belowTest) {
+                testBlankArrayTemporary.push(belowTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (rightTest) {
+                testBlankArrayTemporary.push(rightTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+        }
+        // y = 9
+        if (moveY.y === game.boardSize) {
+            if (aboveTest) {
+                testBlankArrayTemporary.push(aboveTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (belowTest) {
+                testBlankArrayTemporary.push(belowTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+            if (leftTest) {
+                testBlankArrayTemporary.push(leftTest);
+                capturedTestArray.push('captured');
+            } else {
+                capturedTestArray.push('blank');
+            }
+        }
+    // console.log('on edge');
+    // return ('on edge');
     }
-    if (belowTest) {
-        console.log('detected one below')
+    // console.log(capturedTestArray);
+    // if there are any intersections, check for colors
+    if (testBlankArrayTemporary.length > 0) {
+        // captureFunction(moveX, moveY, moveColor);
+        // Get stones that are touching, and are the opposite color
+        let oppositeColorStones = [];
+        // Put all opposite colored stones into an array
+        // console.log(testBlankArrayTemporary);
+
+        for (let i = 0; i < testBlankArrayTemporary.length; i++) {
+
+            // if this move is a neighbor of the other, check the color
+            if ((testBlankArrayTemporary[i].x - moveX.x <= 1) && (testBlankArrayTemporary[i].y - moveY.y <= 1)) {
+                if (testBlankArrayTemporary[i].color !== moveColor.color) {
+                    oppositeColorStones.push(testBlankArrayTemporary[i]);
+                }
+            }
+        }
+        // console.log(oppositeColorStones.lengt);
+        
+        for (let i = 0; i < oppositeColorStones.length; i++) {
+            captureFunction(oppositeColorStones[i]);
+        }
+        console.log(capturedFinalTestArray);
+        // After all stones are checked, stop the loop
+        capturedFinalTestArray = [];
+    } else {
+        console.log('Not touching any stone');
     }
-    if (leftTest) {
-        console.log('detected one left')
-    }
-    if (rightTest) {
-        console.log('detected one right')
+    console.log(capturedTestArray);
+    if (capturedTestArray.includes('blank')) {
+        return 'blank';
     }
     // reset as blanks
+    capturedTestArray = [];
     testBlankArrayTemporary = [];
 }
+
+
+// Function for checking if captured
+const captureFunction = (obj) => {
+
+    let aboveTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x - 1) && moveHolder.y === obj.y);
+    let belowTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x + 1) && moveHolder.y === obj.y);
+    let leftTest = moveHolder.find(moveHolder => moveHolder.y === (obj.y - 1) && moveHolder.x === obj.x);
+    let rightTest = moveHolder.find(moveHolder => moveHolder.y === (obj.y + 1) && moveHolder.x === obj.x);
+
+    // let capturedFinalTestArrayTest = capturedFinalTestArray.find(capturedFinalTestArray => capturedFinalTestArray.x === obj.x && capturedFinalTestArray.y === obj.y);
+
+    // console.log(capturedFinalTestArray.find(existsPrevious));
+
+    function existsPrevious(element) {
+        return (element.x === obj.x && element.y === obj.y);
+    }
+
+    if (capturedFinalTestArray.find(existsPrevious)) {
+        stop();
+    } else {
+        capturedFinalTestArray.push(obj);
+        if (aboveTest && belowTest && leftTest && rightTest && aboveTest.color !== obj.color && belowTest.color !== obj.color && leftTest.color !== obj.color && rightTest.color !== obj.color) {
+            console.log('captured');
+        }
+        if (aboveTest) {
+            if ((aboveTest.color === obj.color)) {
+                checkSurround(aboveTest);
+            }
+        }
+        if (belowTest) {
+            if ((belowTest.color === obj.color)) {
+                checkSurround(belowTest);
+            }
+        }
+        if (leftTest) {
+            if ((leftTest.color === obj.color)) {
+                checkSurround(leftTest);
+            }
+        }
+        if (rightTest) {
+            if ((rightTest.color === obj.color)) {
+                checkSurround(rightTest);
+            }
+        }
+    }
+}
+
+
+// ==================================================================================================
+const checkSurround = (obj) => {
+
+    let aboveTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x - 1) && moveHolder.y === obj.y);
+    let belowTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x + 1) && moveHolder.y === obj.y);
+    let leftTest = moveHolder.find(moveHolder => moveHolder.y === (obj.y - 1) && moveHolder.x === obj.x);
+    let rightTest = moveHolder.find(moveHolder => moveHolder.y === (obj.y + 1) && moveHolder.x === obj.x);
+
+    function existsPrevious(element) {
+        return (element.x === obj.x && element.y === obj.y);
+    }
+
+    // let capturedFinalTestArrayTest = capturedFinalTestArray.find(capturedFinalTestArray => capturedFinalTestArray.x === obj.x && capturedFinalTestArray.y === obj.y);
+
+    // console.log(capturedFinalTestArray.find(existsPrevious));
+
+    if (capturedFinalTestArray.find(existsPrevious)) {
+        stop();
+    } else {
+        capturedFinalTestArray.push(obj);
+        if (aboveTest) {
+            if (aboveTest.color === obj.color) {
+                captureFunction(aboveTest);
+            }
+        }
+        if (belowTest) {
+            if (belowTest.color == obj.color) {
+                captureFunction(belowTest);
+            }
+        }
+        if (leftTest) {
+            if (leftTest.color === obj.color) {
+                captureFunction(leftTest);
+            }
+        }
+        if (rightTest) {
+            if (rightTest.color === obj.color) {
+                captureFunction(rightTest);
+            }
+        }
+    }
+}
+
 
 // Create function that checks if current move is touch a stone of the opposite color
 // If true, put those stones into a temporary array
@@ -254,9 +557,9 @@ for (let i = 0; i < boardSquareHolder.length; i++) {
             boardSquareHolder[i].style.opacity = 1;
         }
         // Increment and then play sound effect is move is available
+        generateMove(evt);
         turnTracker ++;
         stoneSoundEffect.play();
-        generateMove(evt);
         game.lastMove = moveHolder[turnTracker - 2]; // Turn tracker is incrmented prior to updating this record
     }
     })
