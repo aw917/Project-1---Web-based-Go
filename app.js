@@ -3,7 +3,7 @@
 // Note to Potential Reviewers
 // ======================================
 //
-//   This code was compiled as of November 23, 2020 over the course of 6 business days for Project 1 of GA's Software Engineering Immersive bootcamp. 
+//   This code was compiled as of November 23, 2020 over the course of 5 business days for Project 1 of GA's Software Engineering Immersive bootcamp. 
 //   Prior to GA, I had no coding experience, so this demonstrates progress made after learning to code for net ~5 weeks (3 weeks of class, 2 weeks self-taught).
 //   Conventions that are not followed, such as spacing or otherwise, and inefficencies in how the code is written are largely due to my inexperience and
 //   I welcome any and all feedback on how to improve them.
@@ -14,14 +14,14 @@
 //      - The robust nature of the code (written with board size as an input, class for games, and generating board elements)
 //
 //  Additionally, these are known areas of improvement:
-//      - The recursive algorithm for stone capture is written inefficienctly (surroundFunction1 and surroundFunction2 are identical)
+//      - The recursive algorithm for stone capture is written inefficienctly (surroundFunction1 and surroundFunction2 are nearly identical)
 //      - There are bugs around playing stones in areas that have already been captured (persists due to a time and knowledge limitaiton)
-//      - Variable declaration is inconsistently global / local, and is a source of some errors
+//      - Variable declaration is inconsistently global / local, and is a source of some errors (persists due to my inexperience limitaiton)
 //      - Point counting has been done manually due to time limitations
 //
 //  Finally, time permitting, these are the features that I would add:
-//      - Prevent illegal moves (you can't play in a space that would capture a stone)
-//      - Superko logic (how many times positions can be repeated in go, due to capturing one stone after another)
+//      - Prevent illegal moves (you can currently play in a space that would capture a stone)
+//      - Ko / superko logic (how many times positions can be repeated in go, due to capturing one stone after another)
 //      - Automatic point counting (incl. smart deadstone detection)
 //
 //  Thank you for your consideration and please let me know how this code can be improved!
@@ -32,7 +32,7 @@
 //   - Game Classes
 //   - Move Locations
 //   - Stone Capture
-//   - Winning Points
+//   - Counting Points
 //   - Event Listeners
 // ========================================
 
@@ -46,6 +46,9 @@ const modalDisplay = document.querySelector('.modal');
 // Functional buttons
 const passButton = document.querySelector('#pass-button');
 const resignButton = document.querySelector('#resign-button');
+
+// Container
+const actionButton = document.querySelector('.action-buttons');
 
 // Board nodes (moved below due to scoping with classes)
 const boardDomNode = document.querySelector('.board-div');
@@ -100,6 +103,7 @@ class GameState {
         if (this.lastMove === "Pass") {
             alert('Both players plassed!  The game is over!')
             // function for counting stones
+            countPoints();
         } else {
             this.lastMove = "Pass";
         }
@@ -315,7 +319,7 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
         
         // Take every opposite color stone and generates an array with their clusters
         for (let i = 0; i < oppositeColorStones.length; i++) {
-            // Run recursive capture function
+            // Run recursive clumping function
             surroundFunction1(oppositeColorStones[i]);
 
             // Prevent creating double arrays if a stone touches two of opposite colors
@@ -336,10 +340,13 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
                 // log that it's not captured
                 console.log('no action needed as not captured');
             }
-
             // run true multiple times
             console.log(capturedFinalTestArray);
-
+            // reset as blanks
+            capturedTestArray = [];
+            testBlankArrayTemporary = [];
+            oppositeColorStones = [];
+            
             // reset to null array
             capturedFinalTestArray = [];
         }
@@ -349,9 +356,9 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
     } else {
         console.log('Not touching any stone');
     }
-    // reset as blanks
-    capturedTestArray = [];
-    testBlankArrayTemporary = [];
+    // capturedTestArray = [];
+    // testBlankArrayTemporary = [];
+    // oppositeColorStones = [];
 }
 
 
@@ -629,7 +636,7 @@ const checkIfSurroundIsCapture = (obj) => {
 // Please note, the bug that is causing the issue with stones being captured without need is probably within here.
 const performCapture = (obj) => {
     // add captured points to total captured points to the correct color
-    if (obj.color === 'White') {
+    if (obj[0].color === 'White') {
         game.capturedWhiteStones = game.capturedWhiteStones + obj.length;
         whiteCapturedCount.innerText = `${game.capturedWhiteStones}`;
     } else {
@@ -656,20 +663,20 @@ const performCapture = (obj) => {
 
     // Remove the captured moves from the moveHolder
     for (let i = 0; i < obj.length; i++) {
-        moveHolder.splice(moveHolder.find((item) => {
-            moveHolder.indexOf((item.x === obj[i].x && item.y === obj[i].y))
-            }), 1);
+        // Thank you to a classmate for this solution
+        // Get index for each obj
+        let index = moveHolder.findIndex(el => el.x === obj[i].x && el.y === obj[i].y);
+        //remove them from the move holder
+        moveHolder.splice(index, 1)
     }
 
     console.log(moveHolder);
     // reset arrays to null
     idHolder = [];
-    // capturedFinalTestArray = [];
+    capturedFinalTestArray = [];
 }
 
-// ====================
-// Counting Points
-// ====================
+
 
 // Create two turns for counting, count black points and have a button appear for when you're done
 
@@ -684,14 +691,14 @@ const performCapture = (obj) => {
 // Modal play button
 playButton.addEventListener('click', () => {
     modalDisplay.style.display = "none";
-    enableOtherListeners(); // event listeners only accessible once modal is closed
+    // enableOtherListeners(); // event listeners only accessible once modal is closed
 })
 
 /*
 Enable other listeners prevents eventlisteners from being triggered
 until the modal has been removed (did not indent)
 **/
-const enableOtherListeners = () => {
+// const enableOtherListeners = () => {
 
 // Functional buttons
 resignButton.addEventListener('click', game.resign);
@@ -699,7 +706,7 @@ passButton.addEventListener('click', game.pass);
 
 // Square titles
 for (let i = 0; i < boardSquareHolder.length; i++) {
-    boardSquareHolder[i].addEventListener('click', (evt) => {
+    const clickBoardSquare = (evt) => {
     // Control for spots already played in
     if (evt.target.className.includes('played')) {
         // console.log('already played');
@@ -718,38 +725,98 @@ for (let i = 0; i < boardSquareHolder.length; i++) {
         stoneSoundEffect.play();
         game.lastMove = moveHolder[turnTracker - 2]; // Turn tracker is incrmented prior to updating this record
     }
-    })
+    }
+    boardSquareHolder[i].addEventListener('click', clickBoardSquare);
 }
 
 // Puts hover-over feature
-for (let i = 0; i < boardSquareHolder.length; i++) {
-    boardSquareHolder[i].addEventListener('pointerenter', (evt) => {
-        // Show hover if the area has not been played
-        if (evt.target.className.includes("played")) {
-            // Control for whose turn it is
-            // console.log('already played');
+const hoverInFeature = (evt) => {
+    // Show hover if the area has not been played
+    if (evt.target.className.includes("played")) {
+        // Control for whose turn it is
+        // console.log('already played');
+    } else {
+        if (getCurrentTurn() === "White") {
+            evt.target.className = "white-stone";
+            evt.target.style.opacity = 0.7;
         } else {
-            if (getCurrentTurn() === "White") {
-                evt.target.className = "white-stone";
-                evt.target.style.opacity = 0.7;
-            } else {
-                evt.target.className = "black-stone";
-                evt.target.style.opacity = 0.7;
-            }
+            evt.target.className = "black-stone";
+            evt.target.style.opacity = 0.7;
         }
-    })
-
+    }
 }
 
-// Removes hover formatting on exit
 for (let i = 0; i < boardSquareHolder.length; i++) {
-    boardSquareHolder[i].addEventListener('pointerout', (evt) => {
+    boardSquareHolder[i].addEventListener('pointerenter', hoverInFeature)
+}
+
+const hoverOutFeature = (evt) =>{
     if (evt.target.className.includes("played")) {
         // nothing, already happened
     } else {
+        evt.target.className = "board-squares";
         evt.target.style.opacity = 0;
     }
-    })
+}
+// Removes hover formatting on exit
+for (let i = 0; i < boardSquareHolder.length; i++) {
+    boardSquareHolder[i].addEventListener('pointerout', hoverOutFeature)
 }
 
-} // end to all post-modal event listeners
+// ====================
+// Counting Points
+// ====================
+
+let totalBlackPoints = 0;
+let totalWhitePoints = 0;
+
+// How to handle clicks on empty spaces
+const countPointsManual = (evt) => {
+    let target = evt.target;
+    target.style.opacity = 0.8;
+    if (getCurrentTurn() === "White") {
+        target.innerText = "W";
+        target.className = "counted-white";
+    } else {
+        target.innerText = "B";
+        target.className = "counted-black";
+    }
+    turnTracker --;
+}
+
+const comparePoints = () => {
+    let countedWhite = document.querySelectorAll('.counted-white');
+    let countedBlack = document.querySelectorAll('.counted-black');
+    totalBlackPoints = countedBlack.length + game.capturedWhiteStones;
+    totalWhitePoints = countedWhite.length + game.komi + game.capturedBlackStones;
+    if (totalBlackPoints > totalWhitePoints) {
+        alert(`Black has ${totalBlackPoints} points and white has ${totalWhitePoints}, black won!`);
+    } else {
+        alert(`Black has ${totalBlackPoints} points and white has ${totalWhitePoints}, white won!`);
+    }
+}
+
+const countPoints = () => {
+    // Add button to count points allow for switching colors on the event listener
+    let switchColors = document.createElement('button');
+    actionButton.appendChild(switchColors);
+    switchColors.innerText = 'switch colors';
+    switchColors.addEventListener('click', () => turnTracker++);
+
+    // Add button to compare the points
+    let finishCounting = document.createElement('button');
+    actionButton.appendChild(finishCounting);
+    finishCounting.innerText = 'finish counting';
+    finishCounting.addEventListener('click', comparePoints);
+
+    // Update event listeners for empty spaces
+    let emptyBoardSquares = document.querySelectorAll('.board-squares');
+    for (let i = 0; i < emptyBoardSquares.length; i++) {
+        emptyBoardSquares[i].removeEventListener('pointerout', hoverOutFeature);
+        emptyBoardSquares[i].removeEventListener('pointerenter', hoverInFeature);
+        emptyBoardSquares[i].addEventListener('click', countPointsManual);
+    }
+
+}
+
+// } // end to all post-modal event listeners
