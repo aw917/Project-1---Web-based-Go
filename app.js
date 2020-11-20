@@ -1,41 +1,31 @@
-// Pseudo-code
-
-// DOM nodes for:
-// - modal
-// - board
-// - resign btn
-// - pass btn
-
-
-// Game state class
-// Turn tracker
-// Last move tracker
-// Time tracker
-// Resign fxn
-// Pass fxn + logic
-// Captured white stones
-// Captured black stones
-// White points (end of game)
-// Black points (end of game)
-// Komi (3.5 points) for white
-
-// Move locations
-// Div's for all intersections
-// x, y, played (null, white, or black)
-// Banning existing stones and only letting you 
-
-// Winning points algorithm
-// Counts # of points for win state
-
-
-// Capturing stones algorithm
-
-// Event listeners
-// - modal
-// - all board intersection nodes
-
-
-
+//
+// ======================================
+// Note to Potential Reviewers
+// ======================================
+//
+//   This code was compiled as of November 23, 2020 over the course of 6 business days for Project 1 of GA's Software Engineering Immersive bootcamp. 
+//   Prior to GA, I had no coding experience, so this demonstrates progress made after learning to code for net ~5 weeks (3 weeks of class, 2 weeks self-taught).
+//   Conventions that are not followed, such as spacing or otherwise, and inefficencies in how the code is written are largely due to my inexperience and
+//   I welcome any and all feedback on how to improve them.
+//
+//   Of note, I want to highlight a couple points of pride for this program:
+//      - A successful, recursive algorithm for stone capture
+//      - Enjoyable user experience and a very approachable UI / UX
+//      - The robust nature of the code (written with board size as an input, class for games, and generating board elements)
+//
+//  Additionally, these are known areas of improvement:
+//      - The recursive algorithm for stone capture is written inefficienctly (surroundFunction1 and surroundFunction2 are identical)
+//      - There are bugs around playing stones in areas that have already been captured (persists due to a time and knowledge limitaiton)
+//      - Variable declaration is inconsistently global / local, and is a source of some errors
+//      - Point counting has been done manually due to time limitations
+//
+//  Finally, time permitting, these are the features that I would add:
+//      - Prevent illegal moves (you can't play in a space that would capture a stone)
+//      - Superko logic (how many times positions can be repeated in go, due to capturing one stone after another)
+//      - Automatic point counting (incl. smart deadstone detection)
+//
+//  Thank you for your consideration and please let me know how this code can be improved!
+//
 // ========================================
 // Go Game Code
 //   - DOM Nodes
@@ -75,6 +65,7 @@ const stoneSoundEffect = document.querySelector('#board-sound-effect');
 // ====================
 // Game Classes
 // ====================
+// Used to track whether it's white or black's turn
 let turnTracker = 1;
 
 const getCurrentTurn = () => {
@@ -143,19 +134,11 @@ for (let i = 0; i < (game.boardSize * game.boardSize); i++) {
 //Empty array to hold all the moves
 let moveHolder = [];
 
-// Move object template
-let moveTemplateObject = {
-    x: 1, // x axis of the grid, running form 1 to board.length
-    y: 1, // y axis of the grid, running form 1 to board.length
-    played: true || false,
-    color: "White" || "Black"
-}
-
-// Generate move object
+// Generate move object on 9 x 9 grid (x, y) => from (1, 1) to (9, 9)
 const generateMove = (evt) => {
     let thisMove = {
-        x: 1,
-        y: 1,
+        x: 0,
+        y: 0,
         played: true,
         color: getCurrentTurn()
     }
@@ -166,6 +149,7 @@ const generateMove = (evt) => {
     moveHolder.push(thisMove);
     // console.log(moveHolder);
     // console.log(thisMove);
+    console.log(moveHolder);
     checkForBlanks(thisMove, thisMove, thisMove);
     // checkForCapture(thisMove, thisMove); // to be created
 }
@@ -174,9 +158,8 @@ const generateMove = (evt) => {
 // Stone Capture
 // ====================
 
-
+// Used for checking logic
 let capturedFinalTestArray = [];
-// Edge checking logic
 
 // Check blanks
 const checkForBlanks = (moveX, moveY, moveColor) => {
@@ -311,8 +294,6 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
                 testBlankArrayTemporary.push(leftTest);
             }
         }
-    // console.log('on edge');
-    // return ('on edge');
     }
 
     // if there are any intersections, check for colors
@@ -334,7 +315,7 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
         
         // Take every opposite color stone and generates an array with their clusters
         for (let i = 0; i < oppositeColorStones.length; i++) {
-            // Run recursive function
+            // Run recursive capture function
             surroundFunction1(oppositeColorStones[i]);
 
             // Prevent creating double arrays if a stone touches two of opposite colors
@@ -342,20 +323,22 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
             function existsPrevious(element) {
                 return (element.x === checkDuplicateArray.x && element.y === checkDuplicateArray.y);
             }
+
             // If that array exists already, stop the loop
             if (capturedFinalTestArray.find(existsPrevious)) {
                 break;
             }
-            // run true multiple times
-            console.log(capturedFinalTestArray);
 
             // check if cluster captured
             if (checkIfSurroundIsCapture(capturedFinalTestArray) === 'captured') {
                 performCapture(capturedFinalTestArray);
             } else {
-                // check if an illegal move
+                // log that it's not captured
                 console.log('no action needed as not captured');
             }
+
+            // run true multiple times
+            console.log(capturedFinalTestArray);
 
             // reset to null array
             capturedFinalTestArray = [];
@@ -373,8 +356,9 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
 
 
 // ==================================================================================================
-// surroundFunction(s) 1 and 2 are recursive functions whereby, they ingest an opposite colored stone touching what is played, and then
-// puts all touching, opposite-colored stones into an array.  They continuously feed off of one another until they complete.
+// surroundFunction(s) 1 and 2 are recursive functions, whereby, they ingest an opposite colored stone touching what was most recently played, and then
+// puts all touching, opposite-colored stones into an array (if touching multiple stones that do not touch themselves, then they are seperate arrays).
+// They continuously feed off of one another until they complete.
 // They are bounded by above/below/left/right test logic.
 
 // Function for checking if captured
@@ -465,7 +449,6 @@ const surroundFunction2 = (obj) => {
 // a check where if everything exists, then it is captured
 const checkIfSurroundIsCapture = (obj) => {
     let capturedTestArray = [];
-
     // Check every stone within a group
     for (i = 0; i < obj.length; i++) {
         // rename each array element for sake of ease
@@ -499,7 +482,7 @@ const checkIfSurroundIsCapture = (obj) => {
             }
             // check if it's the corner or the edge
         } else if ( (element.x === 1 || element.x === game.boardSize) && (element.y === 1 || element.y === game.boardSize)) {
-    // This section runs through every corner and edge scenario and then runs the stone touching checking algorithm only for that
+    // This section runs through every corner and edge scenario
     // relevant edge or corner - i.e., if x = 1 and y = 4, you wouldn't check above.  If x = 9 and y = 9, the program
     // will only check left and above.
             // check if it's a corner or an edge
@@ -635,30 +618,34 @@ const checkIfSurroundIsCapture = (obj) => {
     if (capturedTestArray.includes('blank')) {
         return 'not captured';
     } else {
+
         return 'captured';
     }
     // reset testing array to null
     capturedTestArray = [];
 }
 
+// This functions both renders the capture and does the back-end needed to clear the board
+// Please note, the bug that is causing the issue with stones being captured without need is probably within here.
 const performCapture = (obj) => {
     // add captured points to total captured points to the correct color
     if (obj.color === 'White') {
         game.capturedWhiteStones = game.capturedWhiteStones + obj.length;
-        whiteCapturedCount.innerText = `${game.capturedWhiteStones}`
+        whiteCapturedCount.innerText = `${game.capturedWhiteStones}`;
     } else {
         game.capturedBlackStones = game.capturedBlackStones + obj.length;
-        blackCapturedCount.innerText = `${game.capturedBlackStones}`
+        blackCapturedCount.innerText = `${game.capturedBlackStones}`;
     }
 
     // put all divs' id's into an array
     let idHolder = [];
-    obj.map((element) => {
+    for (let i = 0; i < obj.length; i++) {
         let tempId;
+        let element = obj[i];
         // reverse div 0 - 80, to (1, 1) to (9, 9)
-        tempId = (element.x - 1) * 9 + element.y - 1;
+        tempId = (element.x - 1) * game.boardSize + element.y - 1;
         idHolder.push(tempId);
-    })
+    }
     
     // turn transparency to 0 and change class name for each of the divs
     for (i = 0; i < idHolder.length; i++) {
@@ -668,35 +655,28 @@ const performCapture = (obj) => {
     }
 
     // Remove the captured moves from the moveHolder
-    moveHolder.splice(moveHolder.findIndex((item) => {
-        return (item.x !== obj.x && item.y !== obj.y)
-        }), 1);
+    for (let i = 0; i < obj.length; i++) {
+        moveHolder.splice(moveHolder.find((item) => {
+            moveHolder.indexOf((item.x === obj[i].x && item.y === obj[i].y))
+            }), 1);
+    }
+
     console.log(moveHolder);
-
-    // reset idHolder
+    // reset arrays to null
     idHolder = [];
+    // capturedFinalTestArray = [];
 }
-
-// Create function that checks if current move is touch a stone of the opposite color
-// If true, put those stones into a temporary array
-// Create temporary array for logic check of stone capture
-// Loop through array and check logic:
-// within 1 - 9 for x and y go to each of the following
-// x - 1, x + 1, y - 1, y + 1
-// if any are blank, end function or push "blank" to array
-// if same color, continue function from that stone
-//   and push checked stones into an array that tracks them
-//   (how to prevent double checked? temporary ids?)
-// if different color, push string "captured" to array
-
-// Check array for all captured, take tracked stones and count
-// get ids from array (conversion function?)
-// change class name from stone
-// add points by counting and put them back in
 
 // ====================
 // Counting Points
 // ====================
+
+// Create two turns for counting, count black points and have a button appear for when you're done
+
+// Make array of all possible moves
+// Remove all played moves and make this space array
+// Perform recursive functions that count groups
+// 
 
 // ====================
 // Event Listeners
