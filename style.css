@@ -196,6 +196,24 @@ Stones
     box-shadow: inset -3px -3px rgba(255, 255, 255, .75);
     z-index: 7;
 }
+.dead-white {
+    height: 48px;
+    width: 48px;
+    border-radius: 50%;
+    background-color: white;
+    color: black;
+    box-shadow: inset -3px -3px rgba(0, 0, 0, .75);
+    z-index: 7;
+}
+.dead-black {
+    height: 48px;
+    width: 48px;
+    border-radius: 50%;
+    background-color: black;
+    color: white;
+    box-shadow: inset -3px -3px rgba(255, 255, 255, .75);
+    z-index: 7;
+}
 
 /* Remove stones from display */
 #black-stone-test {

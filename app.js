@@ -61,6 +61,10 @@ const blackStone = document.querySelector('.black-stone');
 const whiteCapturedCount = document.querySelector('#black-captured-count');
 const blackCapturedCount = document.querySelector('#white-captured-count');
 
+// dead stones
+// const whiteDeadStones = document.querySelector('.white-stone');
+// const blackDeadStones = document.querySelector('.black-stone');
+
 // sound effect
 const stoneSoundEffect = document.querySelector('#board-sound-effect');
 
@@ -102,7 +106,7 @@ class GameState {
         turnTracker += 1;
         if (this.lastMove === "Pass") {
             alert('Both players plassed!  The game is over!')
-            // function for counting stones
+            // function counting points
             countPoints();
         } else {
             this.lastMove = "Pass";
@@ -151,11 +155,8 @@ const generateMove = (evt) => {
     thisMove.y = Math.floor((Number(evt.target.id) % game.boardSize)) + 1;
     // Track moves by pushing them into an array 
     moveHolder.push(thisMove);
-    // console.log(moveHolder);
-    // console.log(thisMove);
     console.log(moveHolder);
     checkForBlanks(thisMove, thisMove, thisMove);
-    // checkForCapture(thisMove, thisMove); // to be created
 }
 
 // ====================
@@ -356,9 +357,6 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
     } else {
         console.log('Not touching any stone');
     }
-    // capturedTestArray = [];
-    // testBlankArrayTemporary = [];
-    // oppositeColorStones = [];
 }
 
 
@@ -375,15 +373,10 @@ const surroundFunction1 = (obj) => {
     let belowTest = moveHolder.find(moveHolder => moveHolder.x === (obj.x + 1) && moveHolder.y === obj.y);
     let leftTest = moveHolder.find(moveHolder => moveHolder.y === (obj.y - 1) && moveHolder.x === obj.x);
     let rightTest = moveHolder.find(moveHolder => moveHolder.y === (obj.y + 1) && moveHolder.x === obj.x);
-
-    // let capturedFinalTestArrayTest = capturedFinalTestArray.find(capturedFinalTestArray => capturedFinalTestArray.x === obj.x && capturedFinalTestArray.y === obj.y);
-
-    // console.log(capturedFinalTestArray.find(existsPrevious));
-
+    
     function existsPrevious(element) {
         return (element.x === obj.x && element.y === obj.y);
     }
-
     if (capturedFinalTestArray.find(existsPrevious)) {
         stop();
     } else {
@@ -677,14 +670,6 @@ const performCapture = (obj) => {
 }
 
 
-
-// Create two turns for counting, count black points and have a button appear for when you're done
-
-// Make array of all possible moves
-// Remove all played moves and make this space array
-// Perform recursive functions that count groups
-// 
-
 // ====================
 // Event Listeners
 // ====================
@@ -694,17 +679,11 @@ playButton.addEventListener('click', () => {
     // enableOtherListeners(); // event listeners only accessible once modal is closed
 })
 
-/*
-Enable other listeners prevents eventlisteners from being triggered
-until the modal has been removed (did not indent)
-**/
-// const enableOtherListeners = () => {
-
-// Functional buttons
+// Initial functional buttons
 resignButton.addEventListener('click', game.resign);
 passButton.addEventListener('click', game.pass);
 
-// Square titles
+// Square tiles
 for (let i = 0; i < boardSquareHolder.length; i++) {
     const clickBoardSquare = (evt) => {
     // Control for spots already played in
@@ -758,7 +737,7 @@ const hoverOutFeature = (evt) =>{
         evt.target.style.opacity = 0;
     }
 }
-// Removes hover formatting on exit
+// Removes hover formatting on on counting
 for (let i = 0; i < boardSquareHolder.length; i++) {
     boardSquareHolder[i].addEventListener('pointerout', hoverOutFeature)
 }
@@ -772,6 +751,9 @@ let totalWhitePoints = 0;
 
 // How to handle clicks on empty spaces
 const countPointsManual = (evt) => {
+    // Clear moveholder every time you count to prevent capture logic
+    moveHolder = [];
+    // Set target opcaity to 80% to distinguish from played/hovering
     let target = evt.target;
     target.style.opacity = 0.8;
     if (getCurrentTurn() === "White") {
@@ -785,10 +767,18 @@ const countPointsManual = (evt) => {
 }
 
 const comparePoints = () => {
+    // Count all counted white and black
     let countedWhite = document.querySelectorAll('.counted-white');
     let countedBlack = document.querySelectorAll('.counted-black');
-    totalBlackPoints = countedBlack.length + game.capturedWhiteStones;
-    totalWhitePoints = countedWhite.length + game.komi + game.capturedBlackStones;
+    
+    // Count all dead white and black
+    let deadWhite = document.querySelectorAll('.dead-white');
+    let deadBlack = document.querySelectorAll('.dead-black');
+    
+    // Add up the total points
+    totalBlackPoints = countedBlack.length + game.capturedWhiteStones + (deadWhite.length * 2);
+    totalWhitePoints = countedWhite.length + game.komi + game.capturedBlackStones + (deadBlack.length * 2);
+    // Alert based on the winner
     if (totalBlackPoints > totalWhitePoints) {
         alert(`Black has ${totalBlackPoints} points and white has ${totalWhitePoints}, black won!`);
     } else {
@@ -796,19 +786,18 @@ const comparePoints = () => {
     }
 }
 
+// Series of actions performed when pass is pressed twice
 const countPoints = () => {
     // Add button to count points allow for switching colors on the event listener
     let switchColors = document.createElement('button');
     actionButton.appendChild(switchColors);
     switchColors.innerText = 'switch colors';
     switchColors.addEventListener('click', () => turnTracker++);
-
     // Add button to compare the points
     let finishCounting = document.createElement('button');
     actionButton.appendChild(finishCounting);
     finishCounting.innerText = 'finish counting';
     finishCounting.addEventListener('click', comparePoints);
-
     // Update event listeners for empty spaces
     let emptyBoardSquares = document.querySelectorAll('.board-squares');
     for (let i = 0; i < emptyBoardSquares.length; i++) {
@@ -816,7 +805,37 @@ const countPoints = () => {
         emptyBoardSquares[i].removeEventListener('pointerenter', hoverInFeature);
         emptyBoardSquares[i].addEventListener('click', countPointsManual);
     }
+    // Update event listeners for dead stones
+
+     // Get all played points
+     const playedWhite = document.querySelectorAll('.played-white');
+     const playedBlack = document.querySelectorAll('.played-black');
+
+     // Put event listeners on played stones to allow for marking them dead
+     // Mark black stones dead
+     let deadBlack;
+     // Dead black
+     for (let i = 0; i < playedBlack.length; i++) {
+         deadBlack = playedBlack[i];
+         deadBlack.addEventListener('click', (evt) => {
+            evt.target.toggleAttribute('class', 'dead-black');
+            evt.target.removeEventListener('pointerout', hoverOutFeature);
+            evt.target.removeEventListener('pointerenter', hoverInFeature);
+            evt.target.innerText = 'dead';
+            undoDead();
+         });
+     }
+     // Dead white
+     let deadWhite;
+     for (let i = 0; i < playedWhite.length; i++) {
+         deadWhite = playedWhite[i];
+         deadWhite.addEventListener('click', (evt) => {
+            evt.target.removeEventListener('pointerout', hoverOutFeature);
+            evt.target.removeEventListener('pointerenter', hoverInFeature);
+            evt.target.toggleAttribute('class', 'dead-white');
+            evt.target.innerText = 'dead';
+            undoDead();
+         });
+     }
 
 }
-
-// } // end to all post-modal event listeners
