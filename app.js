@@ -39,6 +39,7 @@
 // ====================
 // DOM Nodes
 // ====================
+
 // Modal pop-up
 const playButton = document.querySelector('#play-button');
 const modalDisplay = document.querySelector('.modal');
@@ -673,6 +674,7 @@ const performCapture = (obj) => {
 // ====================
 // Event Listeners
 // ====================
+
 // Modal play button
 playButton.addEventListener('click', () => {
     modalDisplay.style.display = "none";
