@@ -305,11 +305,10 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
     // if there are any intersections, check for colors
     if (testBlankArrayTemporary.length > 0) {
 
-        // Get stones that are touching, and are the opposite color
-        let oppositeColorStones = [];
-
         // Put all opposite colored stones into an array
         for (let i = 0; i < testBlankArrayTemporary.length; i++) {
+            // Get stones that are touching, and are the opposite color
+            let oppositeColorStones = [];
 
             // if this move is a neighbor of the other, check the color
             if ((testBlankArrayTemporary[i].x - moveX.x <= 1) && (testBlankArrayTemporary[i].y - moveY.y <= 1)) {
@@ -317,42 +316,43 @@ const checkForBlanks = (moveX, moveY, moveColor) => {
                     oppositeColorStones.push(testBlankArrayTemporary[i]);
                 }
             }
-        }
         
-        // Take every opposite color stone and generates an array with their clusters
-        for (let i = 0; i < oppositeColorStones.length; i++) {
-            // Run recursive clumping function
-            surroundFunction1(oppositeColorStones[i]);
+            // Take every opposite color stone and generates an array with their clusters
+            for (let i = 0; i < oppositeColorStones.length; i++) {
+                
+                // Run recursive clumping function
+                surroundFunction1(oppositeColorStones[i]);
+                // Prevent creating double arrays if a stone touches two of opposite colors
+                let checkDuplicateArray = capturedFinalTestArray;
+                function existsPrevious(element) {
+                    return (element.x === checkDuplicateArray.x && element.y === checkDuplicateArray.y);
+                }
 
-            // Prevent creating double arrays if a stone touches two of opposite colors
-            let checkDuplicateArray = capturedFinalTestArray;
-            function existsPrevious(element) {
-                return (element.x === checkDuplicateArray.x && element.y === checkDuplicateArray.y);
-            }
+                // If that array exists already, stop the loop
+                if (capturedFinalTestArray.find(existsPrevious)) {
+                    break;
+                }
 
-            // If that array exists already, stop the loop
-            if (capturedFinalTestArray.find(existsPrevious)) {
-                break;
-            }
+                checkDuplicateArray = [];
+                oppositeColorStones = [];
 
-            // check if cluster captured
-            if (checkIfSurroundIsCapture(capturedFinalTestArray) === 'captured') {
-                performCapture(capturedFinalTestArray);
-            } else {
-                // log that it's not captured
-                console.log('no action needed as not captured');
-            }
-            // run true multiple times
-            console.log(capturedFinalTestArray);
-            // reset as blanks
-            capturedTestArray = [];
-            testBlankArrayTemporary = [];
-            oppositeColorStones = [];
-            
-            // reset to null array
-            capturedFinalTestArray = [];
+                // check if cluster captured
+                if (checkIfSurroundIsCapture(capturedFinalTestArray) === 'captured') {
+                    performCapture(capturedFinalTestArray);
+                } else {
+                    // log that it's not captured
+                    console.log('no action needed as not captured');
+                }
+                // run true multiple times
+                console.log(capturedFinalTestArray);
+                // reset as blanks
+                capturedTestArray = [];
+                testBlankArrayTemporary = [];
+                
+                // reset to null array
+                capturedFinalTestArray = [];
         }
-        
+    }
         // After all stones are checked, stop the loop
         
     } else {
@@ -617,13 +617,13 @@ const checkIfSurroundIsCapture = (obj) => {
         }
     }
     if (capturedTestArray.includes('blank')) {
+        capturedTestArray = [];
         return 'not captured';
     } else {
-
-        return 'captured';
+        capturedTestArray = [];
+        return 'captured'
     }
-    // reset testing array to null
-    capturedTestArray = [];
+    
 }
 
 // This functions both renders the capture and does the back-end needed to clear the board
@@ -642,9 +642,8 @@ const performCapture = (obj) => {
     let idHolder = [];
     for (let i = 0; i < obj.length; i++) {
         let tempId;
-        let element = obj[i];
         // reverse div 0 - 80, to (1, 1) to (9, 9)
-        tempId = (element.x - 1) * game.boardSize + element.y - 1;
+        tempId = (obj[i].x - 1) * game.boardSize + obj[i].y - 1;
         idHolder.push(tempId);
     }
     
@@ -667,7 +666,7 @@ const performCapture = (obj) => {
     console.log(moveHolder);
     // reset arrays to null
     idHolder = [];
-    capturedFinalTestArray = [];
+    // capturedFinalTestArray = [];
 }
 
 
@@ -820,11 +819,10 @@ const countPoints = () => {
      for (let i = 0; i < playedBlack.length; i++) {
          deadBlack = playedBlack[i];
          deadBlack.addEventListener('click', (evt) => {
-            evt.target.toggleAttribute('class', 'dead-black');
             evt.target.removeEventListener('pointerout', hoverOutFeature);
             evt.target.removeEventListener('pointerenter', hoverInFeature);
             evt.target.innerText = 'dead';
-            undoDead();
+            evt.target.setAttribute('class', 'dead-black');
          });
      }
      // Dead white
@@ -834,9 +832,8 @@ const countPoints = () => {
          deadWhite.addEventListener('click', (evt) => {
             evt.target.removeEventListener('pointerout', hoverOutFeature);
             evt.target.removeEventListener('pointerenter', hoverInFeature);
-            evt.target.toggleAttribute('class', 'dead-white');
             evt.target.innerText = 'dead';
-            undoDead();
+            evt.target.setAttribute('class', 'dead-white');
          });
      }
 
